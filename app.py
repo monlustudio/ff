@@ -1,56 +1,64 @@
-import React, { useState } from 'react';
+import streamlit as st
 
-const materials = ["玫瑰", "繡球花", "康乃馨", "牡丹", "太陽玫瑰", "向日葵", "大理花", "鬱金香", "小蒼蘭", "雞冠花", "洋桔梗", "風信子", "乒乓菊", "蝴蝶蘭", "星辰花", "陸蓮", "海芋", "紅掌", "大波斯菊", "香水百合", "非洲菊", "龍膽花", "鈴蘭", "鐵線蓮", "罌粟花", "滿天星", "兔尾草", "卡斯比亞", "尤加利葉", "無"];
+# 資料庫設定
+FLOWER_TYPES = ["盆花", "捧花"]
+MATERIALS = ["玫瑰", "繡球花", "康乃馨", "太陽玫瑰", "滿天星", "兔尾草", "卡斯比亞", 
+             "尤加利葉", "黃金球", "薰衣草", "千日紅", "雪松", "麥桿菊", "珍珠草", 
+             "小蒼蘭", "陸蓮", "星辰花", "海芋", "紅掌", "大波斯菊", "鈴蘭", "鐵線蓮", 
+             "罌粟花", "藍星花", "小米果", "山防風", "繡線菊", "白梅", "臘菊", "無"]
 
-const paperTypes = ["霧面紙", "反光紙", "金屬紙", "薄紗", "牛皮紙"];
+WRAP_TYPES = ["霧面防水紙", "韓系透光薄紗", "金屬質感紙", "復古牛皮紙", "絲絨緞帶包裝"]
 
-export default function FlowerGenerator() {
-  const [config, setConfig] = useState({
-    type: '盆花',
-    mainA: '玫瑰', colorA: '紅色',
-    mainB: '無', colorB: '紅色',
-    mainC: '無', colorC: '紅色',
-    auxA: '無', colorAuxA: '白色',
-    auxB: '無', colorAuxB: '白色',
-    leafA: '尤加利葉', colorLeafA: '綠色',
-    leafB: '無', colorLeafB: '綠色',
-    paper: '霧面紙', paperColor: '米色'
-  });
-
-  const generatePrompt = () => {
-    const p = config;
-    const parts = [
-      `一個精緻的永生花${p.type}`,
-      `主花採用${p.colorA}${p.mainA}`,
-      p.mainB !== '無' ? `搭配${p.colorB}${p.mainB}` : '',
-      p.mainC !== '無' ? `以及${p.colorC}${p.mainC}` : '',
-      p.auxA !== '無' ? `點綴${p.colorAuxA}${p.auxA}` : '',
-      p.leafA !== '無' ? `襯托${p.colorLeafA}${p.leafA}` : '',
-      `包裝採用${p.paperColor}${p.paper}`,
-      "商業花藝攝影，柔和自然光，景深效果，高細節，8k畫質，精緻質感"
-    ].filter(item => item !== '').join("，");
-    
-    return parts;
-  };
-
-  return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
-      <h1>永生花設計提示詞產生器</h1>
-      {/* 簡化範例：僅展示部分選單 */}
-      <label>花藝類型：</label>
-      <select onChange={(e) => setConfig({...config, type: e.target.value})}>
-        <option>盆花</option><option>捧花</option>
-      </select>
-      
-      {/* 你可以依此邏輯擴充其他主花、輔助花、葉材的下拉選單 */}
-      
-      <div style={{ marginTop: '20px', padding: '15px', background: '#f0f0f0' }}>
-        <h3>生成提示詞：</h3>
-        <p>{generatePrompt()}</p>
-        <button onClick={() => navigator.clipboard.writeText(generatePrompt())}>
-          複製提示詞
-        </button>
-      </div>
-    </div>
-  );
+# 顏色調色盤 (Hex Code)
+COLORS = {
+    "乾燥玫瑰粉": "#DCAE96", "奶茶色": "#D2B48C", "奶油白": "#FFFDD0", 
+    "深紅色": "#8B0000", "莫蘭迪藍": "#778899", "鼠尾草綠": "#9DC183", "無": "#FFFFFF"
 }
+
+st.set_page_config(page_title="永生花設計助手", layout="centered")
+st.title("🌸 永生花設計提示詞產生器")
+
+# --- 第一階段：選項設定 ---
+with st.form("design_form"):
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        type_select = st.selectbox("花的類型", FLOWER_TYPES)
+        main_a = st.selectbox("主花 A", MATERIALS)
+        main_b = st.selectbox("主花 B", MATERIALS)
+        main_c = st.selectbox("主花 C", MATERIALS)
+        aux_a = st.selectbox("輔助花 A", MATERIALS)
+        aux_b = st.selectbox("輔助花 B", MATERIALS)
+        leaf_a = st.selectbox("葉材 A", MATERIALS)
+        leaf_b = st.selectbox("葉材 B", MATERIALS)
+    
+    with col2:
+        st.write("### 顏色選擇")
+        color_main_a = st.color_picker("主花 A 顏色", COLORS["乾燥玫瑰粉"])
+        color_main_b = st.color_picker("主花 B 顏色", COLORS["奶油白"])
+        color_main_c = st.color_picker("主花 C 顏色", "#FFFFFF")
+        color_aux = st.color_picker("輔助花顏色", COLORS["莫蘭迪藍"])
+        color_leaf = st.color_picker("葉材顏色", COLORS["鼠尾草綠"])
+        wrap_style = st.selectbox("包裝紙材質", WRAP_TYPES)
+        wrap_color = st.color_picker("包裝紙顏色", COLORS["奶茶色"])
+
+    submitted = st.form_submit_button("生成提示詞")
+
+# --- 生成與輸出 ---
+if submitted:
+    prompt = f"""
+    Professional product photography of a {type_select}. 
+    Featuring {main_a}, {main_b}, {main_c} as main flowers. 
+    Accented with {aux_a}, {aux_b} and {leaf_a}, {leaf_b}. 
+    Wrapped in {wrap_style}. 
+    Color palette: {color_main_a}, {color_main_b}, {color_aux}, {color_leaf}, {wrap_color}.
+    High-end floral design, studio lighting, soft bokeh, 8k resolution, realistic textures, preserved flower aesthetics.
+    """
+    
+    st.subheader("生成的提示詞：")
+    st.code(prompt, language="text")
+    
+    # 複製功能
+    if st.button("複製提示詞"):
+        st.write("已複製到剪貼簿！")
+        st.toast("提示詞已複製")
