@@ -1,64 +1,54 @@
-import streamlit as st
+import React, { useState } from 'react';
 
-# 資料庫設定
-FLOWER_TYPES = ["花盆", "捧花"]
-MATERIALS = ["玫瑰", "繡球花", "康乃馨", "太陽玫瑰", "滿天星", "兔尾草", "卡斯比亞", 
-             "尤加利葉", "黃金球", "薰衣草", "千日紅", "雪松", "麥桿菊", "珍珠草", 
-             "小蒼蘭", "陸蓮", "星辰花", "海芋", "紅掌", "大波斯菊", "鈴蘭", "鐵線蓮", 
-             "罌粟花", "藍星花", "小米果", "山防風", "繡線菊", "白梅", "臘菊", "無"]
+const APP_DATA = {
+  flowers: ["厄瓜多玫瑰", "奧斯汀玫瑰", "太陽玫瑰", "康乃馨", "牡丹", "繡球花", "無"], // 省略部分以保持簡潔
+  materials: ["滿天星", "卡斯比亞", "兔尾草", "尤加利葉", "雪松", "無"],
+  wraps: ["霧面紙", "反光紙", "金屬紙", "薄紗", "牛皮紙"]
+};
 
-WRAP_TYPES = ["霧面防水紙", "韓系透光薄紗", "金屬質感紙", "復古牛皮紙", "絲絨緞帶包裝"]
+export default function FlowerGenerator() {
+  const [config, setConfig] = useState({
+    type: '盆花',
+    mainA: '', mainB: '', mainC: '',
+    auxA: '', auxB: '',
+    leafA: '', leafB: '',
+    wrap: ''
+  });
 
-# 顏色調色盤 (Hex Code)
-COLORS = {
-    "乾燥玫瑰粉": "#DCAE96", "奶茶色": "#D2B48C", "奶油白": "#FFFDD0", 
-    "深紅色": "#8B0000", "莫蘭迪藍": "#778899", "鼠尾草綠": "#9DC183", "無": "#FFFFFF"
+  const [prompt, setPrompt] = useState('');
+
+  const generatePrompt = () => {
+    const p = `Professional preserved flower ${config.type}, featuring ${config.mainA}, ${config.mainB}, ${config.mainC}, accented with ${config.auxA}, ${config.auxB} and ${config.leafA}, ${config.leafB}, wrapped in ${config.wrap}, high-end floral design, studio lighting, 8k resolution, photorealistic, soft texture, elegant aesthetic.`;
+    setPrompt(p);
+  };
+
+  return (
+    <div className="p-6 max-w-2xl mx-auto bg-gray-50">
+      <h1 className="text-2xl font-bold mb-4">永生花設計提示詞生成器</h1>
+      
+      {/* 類型選擇 */}
+      <select onChange={(e) => setConfig({...config, type: e.target.value})} className="w-full p-2 mb-4 border rounded">
+        <option value="盆花">盆花</option>
+        <option value="捧花">捧花</option>
+      </select>
+
+      {/* 花材選擇區 (以主花A為例) */}
+      <div className="grid grid-cols-2 gap-4">
+        <select onChange={(e) => setConfig({...config, mainA: e.target.value})} className="p-2 border rounded">
+          <option>選擇主花A</option>
+          {APP_DATA.flowers.map(f => <option key={f} value={f}>{f}</option>)}
+        </select>
+        <input type="color" className="w-full h-10" onChange={(e) => console.log(e.target.value)} />
+      </div>
+
+      {/* 生成與複製按鈕 */}
+      <div className="mt-6 flex gap-4">
+        <button onClick={generatePrompt} className="bg-pink-500 text-white px-4 py-2 rounded">生成提示詞</button>
+        <button onClick={() => navigator.clipboard.writeText(prompt)} className="bg-gray-800 text-white px-4 py-2 rounded">複製提示詞</button>
+      </div>
+
+      {/* 顯示結果 */}
+      {prompt && <div className="mt-4 p-4 bg-white border border-pink-200 rounded text-sm italic">{prompt}</div>}
+    </div>
+  );
 }
-
-st.set_page_config(page_title="永生花設計助手", layout="centered")
-st.title("🌸 永生花設計提示詞產生器")
-
-# --- 第一階段：選項設定 ---
-with st.form("design_form"):
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        type_select = st.selectbox("花的類型", FLOWER_TYPES)
-        main_a = st.selectbox("主花 A", MATERIALS)
-        main_b = st.selectbox("主花 B", MATERIALS)
-        main_c = st.selectbox("主花 C", MATERIALS)
-        aux_a = st.selectbox("輔助花 A", MATERIALS)
-        aux_b = st.selectbox("輔助花 B", MATERIALS)
-        leaf_a = st.selectbox("葉材 A", MATERIALS)
-        leaf_b = st.selectbox("葉材 B", MATERIALS)
-    
-    with col2:
-        st.write("### 顏色選擇")
-        color_main_a = st.color_picker("主花 A 顏色", COLORS["乾燥玫瑰粉"])
-        color_main_b = st.color_picker("主花 B 顏色", COLORS["奶油白"])
-        color_main_c = st.color_picker("主花 C 顏色", "#FFFFFF")
-        color_aux = st.color_picker("輔助花顏色", COLORS["莫蘭迪藍"])
-        color_leaf = st.color_picker("葉材顏色", COLORS["鼠尾草綠"])
-        wrap_style = st.selectbox("包裝紙材質", WRAP_TYPES)
-        wrap_color = st.color_picker("包裝紙顏色", COLORS["奶茶色"])
-
-    submitted = st.form_submit_button("生成提示詞")
-
-# --- 生成與輸出 ---
-if submitted:
-    prompt = f"""
-    Professional product photography of a {type_select}. 
-    Featuring {main_a}, {main_b}, {main_c} as main flowers. 
-    Accented with {aux_a}, {aux_b} and {leaf_a}, {leaf_b}. 
-    Wrapped in {wrap_style}. 
-    Color palette: {color_main_a}, {color_main_b}, {color_aux}, {color_leaf}, {wrap_color}.
-    High-end floral design, studio lighting, soft bokeh, 8k resolution, realistic textures, preserved flower aesthetics.
-    """
-    
-    st.subheader("生成的提示詞：")
-    st.code(prompt, language="text")
-    
-    # 複製功能
-    if st.button("複製提示詞"):
-        st.write("已複製到剪貼簿！")
-        st.toast("提示詞已複製")
